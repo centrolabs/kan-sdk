@@ -6,7 +6,7 @@
   "homepage": "https://github.com/centrolabs/kan-sdk",
   "repository": {
     "type": "git",
-    "url": "https://github.com/centrolabs/kan-sdk"
+    "url": "git+https://github.com/centrolabs/kan-sdk.git"
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
