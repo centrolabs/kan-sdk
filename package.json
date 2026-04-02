@@ -1,13 +1,21 @@
 {
   "name": "@centrolabs/kan-sdk",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Unofficial SDK for kan.bn API",
+  "author": "centrolabs",
+  "homepage": "https://github.com/centrolabs/kan-sdk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/centrolabs/kan-sdk"
+  },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "type": "module",
   "types": "dist/index.d.ts",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
