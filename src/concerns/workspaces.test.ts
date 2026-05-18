@@ -137,29 +137,17 @@ describe("WorkspacesConcern", () => {
     restore();
   });
 
-  test("searchBoards passes q and pagination params", async () => {
+  test("search calls /workspaces/:id/search with query+limit", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerGet("/workspaces/ws_1/search", { items: [], hasMore: false });
+    mock.registerGet("/workspaces/ws_1/search", []);
 
     const kan = createKan({ apiKey: "kan_test" });
-    await kan.workspaces.searchBoards("ws_1", { q: "backend", cursor: "cur_1", limit: 20 });
+    await kan.workspaces.search("ws_1", { query: "backend", limit: 30 });
 
-    expect(mock.calls[0].url).toContain("q=backend");
-    expect(mock.calls[0].url).toContain("cursor=cur_1");
-    expect(mock.calls[0].url).toContain("limit=20");
-    restore();
-  });
-
-  test("searchCards calls /workspaces/:id/search/cards", async () => {
-    const mock = createMockFetch();
-    const restore = withMock(mock);
-    mock.registerGet("/workspaces/ws_1/search/cards", { items: [], hasMore: false });
-
-    const kan = createKan({ apiKey: "kan_test" });
-    await kan.workspaces.searchCards("ws_1", { q: "backend" });
-
-    expect(mock.calls[0].url).toContain("/workspaces/ws_1/search/cards");
+    expect(mock.calls[0].url).toContain("/workspaces/ws_1/search");
+    expect(mock.calls[0].url).toContain("query=backend");
+    expect(mock.calls[0].url).toContain("limit=30");
     restore();
   });
 

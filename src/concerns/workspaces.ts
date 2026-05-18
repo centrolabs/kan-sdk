@@ -2,10 +2,8 @@ import type {
   Workspace,
   WorkspaceMember,
   InviteLink,
-  CursorPagination,
-  CursorPaginatedResponse,
   Board,
-  Card,
+  WorkspaceSearchResult,
 } from "../types";
 import type { KanClient } from "../client";
 
@@ -27,8 +25,9 @@ export interface InviteMemberInput {
   email: string;
 }
 
-export interface SearchBoardsInput extends CursorPagination {
-  q: string;
+export interface SearchInput {
+  query: string;
+  limit?: number;
 }
 
 export class WorkspacesConcern {
@@ -99,27 +98,17 @@ export class WorkspacesConcern {
     );
   }
 
-  async searchCards(
+  // Server has a single combined search returning boards + cards as a
+  // discriminated union (item.type === "board" | "card"). The result is a
+  // flat array capped by `limit` (default 20, max 50) — there is no cursor
+  // pagination on this endpoint.
+  async search(
     workspacePublicId: string,
-    input: SearchBoardsInput
-  ): Promise<CursorPaginatedResponse<Card>> {
-    const params: Record<string, string> = { q: input.q };
-    if (input.cursor) params.cursor = input.cursor;
-    if (input.limit) params.limit = String(input.limit);
-    return this.client.get<CursorPaginatedResponse<Card>>(
-      `/workspaces/${workspacePublicId}/search/cards`,
-      params
-    );
-  }
-
-  async searchBoards(
-    workspacePublicId: string,
-    input: SearchBoardsInput
-  ): Promise<CursorPaginatedResponse<Board>> {
-    const params: Record<string, string> = { q: input.q };
-    if (input.cursor) params.cursor = input.cursor;
-    if (input.limit) params.limit = String(input.limit);
-    return this.client.get<CursorPaginatedResponse<Board>>(
+    input: SearchInput
+  ): Promise<WorkspaceSearchResult[]> {
+    const params: Record<string, string> = { query: input.query };
+    if (input.limit !== undefined) params.limit = String(input.limit);
+    return this.client.get<WorkspaceSearchResult[]>(
       `/workspaces/${workspacePublicId}/search`,
       params
     );

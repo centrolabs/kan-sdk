@@ -60,13 +60,37 @@ describe("CardsConcern", () => {
   test("update puts with partial body", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPut("/cards/card_1", { publicId: "card_1", title: "Updated", listPublicId: "lst_1", boardPublicId: "brd_1", index: 1, createdAt: "", updatedAt: "" });
+    mock.registerPut("/cards/card_1", { publicId: "card_1", title: "Updated", description: null, dueDate: null });
 
     const kan = createKan({ apiKey: "kan_test" });
     await kan.cards.update("card_1", { title: "Updated", index: 1 });
 
     expect(mock.calls[0].body).toEqual({ title: "Updated", index: 1 });
     expect(mock.calls[0].method).toBe("PUT");
+    restore();
+  });
+
+  test("update auto-defaults index:0 when listPublicId is given without index", async () => {
+    const mock = createMockFetch();
+    const restore = withMock(mock);
+    mock.registerPut("/cards/card_1", { publicId: "card_1", title: "x", description: null, dueDate: null });
+
+    const kan = createKan({ apiKey: "kan_test" });
+    await kan.cards.update("card_1", { listPublicId: "lst_2" });
+
+    expect(mock.calls[0].body).toEqual({ listPublicId: "lst_2", index: 0 });
+    restore();
+  });
+
+  test("update preserves explicit index when both listPublicId and index are given", async () => {
+    const mock = createMockFetch();
+    const restore = withMock(mock);
+    mock.registerPut("/cards/card_1", { publicId: "card_1", title: "x", description: null, dueDate: null });
+
+    const kan = createKan({ apiKey: "kan_test" });
+    await kan.cards.update("card_1", { listPublicId: "lst_2", index: 5 });
+
+    expect(mock.calls[0].body).toEqual({ listPublicId: "lst_2", index: 5 });
     restore();
   });
 

@@ -1,5 +1,7 @@
 import type {
-  Card,
+  CardCreated,
+  CardUpdated,
+  CardDetail,
   CardActivity,
   Checklist,
   ChecklistItem,
@@ -75,16 +77,27 @@ export interface ConfirmAttachmentInput {
 export class CardsConcern {
   constructor(private client: KanClient) {}
 
-  async create(input: CreateCardInput): Promise<Card> {
-    return this.client.post<Card>("/cards", input);
+  async create(input: CreateCardInput): Promise<CardCreated> {
+    return this.client.post<CardCreated>("/cards", input);
   }
 
-  async get(cardPublicId: string): Promise<Card> {
-    return this.client.get<Card>(`/cards/${cardPublicId}`);
+  async get(cardPublicId: string): Promise<CardDetail> {
+    return this.client.get<CardDetail>(`/cards/${cardPublicId}`);
   }
 
-  async update(cardPublicId: string, input: UpdateCardInput): Promise<Card> {
-    return this.client.put<Card>(`/cards/${cardPublicId}`, input);
+  // The kan.bn server crashes with a 500 when `listPublicId` is sent without
+  // an accompanying `index` — we default to `0` (top of the new list) so the
+  // common "move card to another list" call doesn't blow up. Callers that
+  // care about ordering should pass `index` explicitly.
+  async update(
+    cardPublicId: string,
+    input: UpdateCardInput
+  ): Promise<CardUpdated> {
+    const body =
+      input.listPublicId !== undefined && input.index === undefined
+        ? { ...input, index: 0 }
+        : input;
+    return this.client.put<CardUpdated>(`/cards/${cardPublicId}`, body);
   }
 
   async delete(cardPublicId: string): Promise<void> {

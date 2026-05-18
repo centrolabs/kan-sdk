@@ -92,8 +92,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 | DEL | `/workspaces/{workspacePublicId}` | Delete a workspace | [`workspaces.delete()`](#workspaces.delete) |
 | GET | `/workspaces/{workspaceSlug}` | Get a workspace by slug | [`workspaces.getBySlug()`](#workspaces.getbyslug) |
 | GET | `/workspaces/check-slug-availability` | Check if a workspace slug is available | [`workspaces.checkSlugAvailable()`](#workspaces.checkslugavailable) |
-| GET | `/workspaces/{workspacePublicId}/search/cards` | Search cards in a workspace | [`workspaces.searchCards()`](#workspaces.searchcards) |
-| GET | `/workspaces/{workspacePublicId}/search` | Search boards in a workspace | [`workspaces.searchBoards()`](#workspaces.searchboards) |
+| GET | `/workspaces/{workspacePublicId}/search` | Search boards and cards in a workspace | [`workspaces.search()`](#workspaces.search) |
 | POST | `/workspaces/{workspacePublicId}/members/invite` | Invite a member to a workspace | [`workspaces.inviteMember()`](#workspaces.invitemember) |
 | DEL | `/workspaces/{workspacePublicId}/members/{memberPublicId}` | Delete a member from a workspace | [`workspaces.removeMember()`](#workspaces.removemember) |
 | GET | `/workspaces/{workspacePublicId}/members` | Get all workspace members | [`workspaces.listMembers()`](#workspaces.listmembers) |
@@ -198,19 +197,12 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Endpoint:** `GET /workspaces/{workspacePublicId}/boards`
 - **Description:** Lists all boards in a workspace.
 
-<a name="workspaces.searchcards"></a>
-### `searchCards(workspacePublicId, input)`
-- **Parameters:** `workspacePublicId: string`, `SearchBoardsInput` (object with `q`, optional `cursor`, `limit`)
-- **Return Type:** `Promise<CursorPaginatedResponse<Card>>`
-- **Endpoint:** `GET /workspaces/{workspacePublicId}/search/cards`
-- **Description:** Searches for cards within a workspace.
-
-<a name="workspaces.searchboards"></a>
-### `searchBoards(workspacePublicId, input)`
-- **Parameters:** `workspacePublicId: string`, `SearchBoardsInput` (object with `q`, optional `cursor`, `limit`)
-- **Return Type:** `Promise<CursorPaginatedResponse<Board>>`
+<a name="workspaces.search"></a>
+### `search(workspacePublicId, input)`
+- **Parameters:** `workspacePublicId: string`, `SearchInput` (object with `query`, optional `limit` — defaults to 20, max 50)
+- **Return Type:** `Promise<WorkspaceSearchResult[]>` — flat array of a discriminated union; each item is either `{ type: "board", ... }` or `{ type: "card", ... }`.
 - **Endpoint:** `GET /workspaces/{workspacePublicId}/search`
-- **Description:** Searches for boards within a workspace.
+- **Description:** Searches for boards and cards by title within a workspace. The server returns both in a single combined list (no cursor pagination).
 
 <a name="workspaces.checkslugavailable"></a>
 ### `checkSlugAvailable(workspaceSlug)`
@@ -332,23 +324,23 @@ Complete list of all endpoints exposed by the API with their implementation stat
 <a name="cards.create"></a>
 ### `create(input)`
 - **Parameters:** `CreateCardInput` (object with required `title`, `description`, `listPublicId`, `labelPublicIds: string[]`, `memberPublicIds: string[]`, `position: "start" | "end"`, and optional `dueDate`)
-- **Return Type:** `Promise<Card>`
+- **Return Type:** `Promise<CardCreated>` — the server only echoes back `{ publicId }`; call `cards.get()` if you need the full card.
 - **Endpoint:** `POST /cards`
 - **Description:** Creates a new card. All fields except `dueDate` are required by the API.
 
 <a name="cards.get"></a>
 ### `get(cardPublicId)`
 - **Parameters:** `cardPublicId: string`
-- **Return Type:** `Promise<Card>`
+- **Return Type:** `Promise<CardDetail>` — full nested detail including `labels`, `attachments`, `checklists` (with items), `members`, parent `list` (with its board + workspace context), and the recent `activities` log.
 - **Endpoint:** `GET /cards/{cardPublicId}`
 - **Description:** Retrieves a card by its public ID.
 
 <a name="cards.update"></a>
 ### `update(cardPublicId, input)`
 - **Parameters:** `cardPublicId: string`, `UpdateCardInput` (object with optional `title`, `description`, `listPublicId`, `index`, `dueDate`)
-- **Return Type:** `Promise<Card>`
+- **Return Type:** `Promise<CardUpdated>` — `{ publicId, title, description, dueDate }`.
 - **Endpoint:** `PUT /cards/{cardPublicId}`
-- **Description:** Updates an existing card. Card reordering is performed via `index`. Labels and members are managed through their dedicated endpoints.
+- **Description:** Updates an existing card. Card reordering is performed via `index`. Labels and members are managed through their dedicated toggle endpoints. **Quirk:** the kan.bn server crashes (500) when `listPublicId` is sent without `index`; the SDK auto-defaults `index: 0` in that case so a plain "move card to another list" call works.
 
 <a name="cards.delete"></a>
 ### `delete(cardPublicId)`
