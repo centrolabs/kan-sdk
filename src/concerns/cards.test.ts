@@ -222,57 +222,33 @@ describe("CardsConcern", () => {
 
   // ── Members ─────────────────────────────────────────────────────────────────
 
-  test("addMember posts memberPublicId to /cards/:id/members", async () => {
+  test("toggleMember puts /cards/:id/members/:mid and returns newMember flag", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPost("/cards/card_1/members", {});
+    mock.registerPut("/cards/card_1/members/usr_1", { newMember: true });
 
     const kan = createKan({ apiKey: "kan_test" });
-    await kan.cards.addMember("card_1", "usr_1");
-
-    expect(mock.calls[0].url).toContain("/cards/card_1/members");
-    expect(mock.calls[0].body).toEqual({ memberPublicId: "usr_1" });
-    restore();
-  });
-
-  test("removeMember calls DELETE /cards/:id/members/:mid", async () => {
-    const mock = createMockFetch();
-    const restore = withMock(mock);
-    mock.registerDelete("/cards/card_1/members/usr_1", undefined, 204);
-
-    const kan = createKan({ apiKey: "kan_test" });
-    await expect(kan.cards.removeMember("card_1", "usr_1")).resolves.toBeUndefined();
+    const result = await kan.cards.toggleMember("card_1", "usr_1");
 
     expect(mock.calls[0].url).toContain("/cards/card_1/members/usr_1");
-    expect(mock.calls[0].method).toBe("DELETE");
+    expect(mock.calls[0].method).toBe("PUT");
+    expect(result).toEqual({ newMember: true });
     restore();
   });
 
   // ── Labels ──────────────────────────────────────────────────────────────────
 
-  test("addLabel posts labelPublicId to /cards/:id/labels", async () => {
+  test("toggleLabel puts /cards/:id/labels/:lblId and returns newLabel flag", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPost("/cards/card_1/labels", {});
+    mock.registerPut("/cards/card_1/labels/lbl_1", { newLabel: true });
 
     const kan = createKan({ apiKey: "kan_test" });
-    await kan.cards.addLabel("card_1", "lbl_1");
-
-    expect(mock.calls[0].url).toContain("/cards/card_1/labels");
-    expect(mock.calls[0].body).toEqual({ labelPublicId: "lbl_1" });
-    restore();
-  });
-
-  test("removeLabel calls DELETE /cards/:id/labels/:lblId", async () => {
-    const mock = createMockFetch();
-    const restore = withMock(mock);
-    mock.registerDelete("/cards/card_1/labels/lbl_1", undefined, 204);
-
-    const kan = createKan({ apiKey: "kan_test" });
-    await expect(kan.cards.removeLabel("card_1", "lbl_1")).resolves.toBeUndefined();
+    const result = await kan.cards.toggleLabel("card_1", "lbl_1");
 
     expect(mock.calls[0].url).toContain("/cards/card_1/labels/lbl_1");
-    expect(mock.calls[0].method).toBe("DELETE");
+    expect(mock.calls[0].method).toBe("PUT");
+    expect(result).toEqual({ newLabel: true });
     restore();
   });
 

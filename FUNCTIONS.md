@@ -44,10 +44,8 @@ Complete list of all endpoints exposed by the API with their implementation stat
 | POST | `/cards/{cardPublicId}/comments` | Add a comment to a card | [`cards.addComment()`](#cards.addcomment) |
 | PUT | `/comments/{commentPublicId}` | Update a comment | [`cards.updateComment()`](#cards.updatecomment) |
 | DEL | `/comments/{commentPublicId}` | Delete a comment | [`cards.deleteComment()`](#cards.deletecomment) |
-| POST | `/cards/{cardPublicId}/labels` | Add a label to a card | [`cards.addLabel()`](#cards.addlabel) |
-| DEL | `/cards/{cardPublicId}/labels/{labelPublicId}` | Remove a label from a card | [`cards.removeLabel()`](#cards.removelabel) |
-| POST | `/cards/{cardPublicId}/members` | Add a member to a card | [`cards.addMember()`](#cards.addmember) |
-| DEL | `/cards/{cardPublicId}/members/{memberPublicId}` | Remove a member from a card | [`cards.removeMember()`](#cards.removemember) |
+| PUT | `/cards/{cardPublicId}/labels/{labelPublicId}` | Toggle a label on/off a card | [`cards.toggleLabel()`](#cards.togglelabel) |
+| PUT | `/cards/{cardPublicId}/members/{workspaceMemberPublicId}` | Toggle a member on/off a card | [`cards.toggleMember()`](#cards.togglemember) |
 | GET | `/cards/{cardPublicId}` | Get a card by public ID | [`cards.get()`](#cards.get) |
 | PUT | `/cards/{cardPublicId}` | Update a card | [`cards.update()`](#cards.update) |
 | DEL | `/cards/{cardPublicId}` | Delete a card | [`cards.delete()`](#cards.delete) |
@@ -435,35 +433,21 @@ Complete list of all endpoints exposed by the API with their implementation stat
 
 #### Members
 
-<a name="cards.addmember"></a>
-### `addMember(cardPublicId, memberPublicId)`
-- **Parameters:** `cardPublicId: string`, `memberPublicId: string`
-- **Return Type:** `Promise<void>`
-- **Endpoint:** `POST /cards/{cardPublicId}/members`
-- **Description:** Adds a member to a card (sends `{ memberPublicId }` in the request body).
-
-<a name="cards.removemember"></a>
-### `removeMember(cardPublicId, memberPublicId)`
-- **Parameters:** `cardPublicId: string`, `memberPublicId: string`
-- **Return Type:** `Promise<void>`
-- **Endpoint:** `DELETE /cards/{cardPublicId}/members/{memberPublicId}`
-- **Description:** Removes a member from a card.
+<a name="cards.togglemember"></a>
+### `toggleMember(cardPublicId, workspaceMemberPublicId)`
+- **Parameters:** `cardPublicId: string`, `workspaceMemberPublicId: string`
+- **Return Type:** `Promise<{ newMember: boolean }>`
+- **Endpoint:** `PUT /cards/{cardPublicId}/members/{workspaceMemberPublicId}`
+- **Description:** Toggles the member's attachment to the card. Returns `{ newMember: true }` if the member was just added, `{ newMember: false }` if the member was already present and got removed. The server has no separate add/remove endpoints — callers that need idempotent add or remove must check the current state first.
 
 #### Labels
 
-<a name="cards.addlabel"></a>
-### `addLabel(cardPublicId, labelPublicId)`
+<a name="cards.togglelabel"></a>
+### `toggleLabel(cardPublicId, labelPublicId)`
 - **Parameters:** `cardPublicId: string`, `labelPublicId: string`
-- **Return Type:** `Promise<void>`
-- **Endpoint:** `POST /cards/{cardPublicId}/labels`
-- **Description:** Adds a label to a card (sends `{ labelPublicId }` in the request body).
-
-<a name="cards.removelabel"></a>
-### `removeLabel(cardPublicId, labelPublicId)`
-- **Parameters:** `cardPublicId: string`, `labelPublicId: string`
-- **Return Type:** `Promise<void>`
-- **Endpoint:** `DELETE /cards/{cardPublicId}/labels/{labelPublicId}`
-- **Description:** Removes a label from a card.
+- **Return Type:** `Promise<{ newLabel: boolean }>`
+- **Endpoint:** `PUT /cards/{cardPublicId}/labels/{labelPublicId}`
+- **Description:** Toggles the label's attachment to the card. Returns `{ newLabel: true }` if the label was just added, `{ newLabel: false }` if the label was already present and got removed. The server has no separate add/remove endpoints — callers that need idempotent add or remove must check the current state first.
 
 #### Attachments
 

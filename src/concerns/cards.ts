@@ -180,31 +180,26 @@ export class CardsConcern {
 
   // ── Members ─────────────────────────────────────────────────────────────────
 
-  async addMember(cardPublicId: string, memberPublicId: string): Promise<void> {
-    await this.client.post<void>(`/cards/${cardPublicId}/members`, {
-      memberPublicId,
-    });
-  }
-
-  async removeMember(
+  // Server endpoint is a toggle: returns `{ newMember: true }` if the member was
+  // just added, or `{ newMember: false }` if it was already present and got removed.
+  async toggleMember(
     cardPublicId: string,
-    memberPublicId: string
-  ): Promise<void> {
-    await this.client.delete<void>(
-      `/cards/${cardPublicId}/members/${memberPublicId}`
+    workspaceMemberPublicId: string
+  ): Promise<{ newMember: boolean }> {
+    return this.client.put<{ newMember: boolean }>(
+      `/cards/${cardPublicId}/members/${workspaceMemberPublicId}`
     );
   }
 
   // ── Labels ──────────────────────────────────────────────────────────────────
 
-  async addLabel(cardPublicId: string, labelPublicId: string): Promise<void> {
-    await this.client.post<void>(`/cards/${cardPublicId}/labels`, {
-      labelPublicId,
-    });
-  }
-
-  async removeLabel(cardPublicId: string, labelPublicId: string): Promise<void> {
-    await this.client.delete<void>(
+  // Server endpoint is a toggle: returns `{ newLabel: true }` if the label was
+  // just added, or `{ newLabel: false }` if it was already present and got removed.
+  async toggleLabel(
+    cardPublicId: string,
+    labelPublicId: string
+  ): Promise<{ newLabel: boolean }> {
+    return this.client.put<{ newLabel: boolean }>(
       `/cards/${cardPublicId}/labels/${labelPublicId}`
     );
   }
