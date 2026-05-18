@@ -21,6 +21,6 @@ export class UsersConcern {
    * @param input - The fields to update
    */
   async update(input: UpdateUserInput): Promise<User> {
-    return this.client.put<User>("/users/me", input);
+    return this.client.put<User>("/users", input);
   }
 }

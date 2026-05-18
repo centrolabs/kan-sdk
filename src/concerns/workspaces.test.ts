@@ -49,28 +49,28 @@ describe("WorkspacesConcern", () => {
     restore();
   });
 
-  test("getBySlug calls /workspaces/slug/:slug", async () => {
+  test("getBySlug calls /workspaces/:slug", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerGet("/workspaces/slug/my-ws", { publicId: "ws_1", name: "WS", slug: "my-ws", createdAt: "", updatedAt: "" });
+    mock.registerGet("/workspaces/my-ws", { publicId: "ws_1", name: "WS", slug: "my-ws", createdAt: "", updatedAt: "" });
 
     const kan = createKan({ apiKey: "kan_test" });
     await kan.workspaces.getBySlug("my-ws");
 
-    expect(mock.calls[0].url).toContain("/workspaces/slug/my-ws");
+    expect(mock.calls[0].url).toContain("/workspaces/my-ws");
     restore();
   });
 
-  test("update patches with partial body", async () => {
+  test("update puts with partial body", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPatch("/workspaces/ws_1", { publicId: "ws_1", name: "New Name", slug: "ws", createdAt: "", updatedAt: "" });
+    mock.registerPut("/workspaces/ws_1", { publicId: "ws_1", name: "New Name", slug: "ws", createdAt: "", updatedAt: "" });
 
     const kan = createKan({ apiKey: "kan_test" });
-    await kan.workspaces.update("ws_1", { name: "New Name" });
+    await kan.workspaces.update("ws_1", { name: "New Name", weekStartDay: 1 });
 
-    expect(mock.calls[0].body).toEqual({ name: "New Name" });
-    expect(mock.calls[0].method).toBe("PATCH");
+    expect(mock.calls[0].body).toEqual({ name: "New Name", weekStartDay: 1 });
+    expect(mock.calls[0].method).toBe("PUT");
     restore();
   });
 
@@ -163,15 +163,17 @@ describe("WorkspacesConcern", () => {
     restore();
   });
 
-  test("checkSlugAvailable calls /workspaces/slug/:slug/available", async () => {
+  test("checkSlugAvailable calls /workspaces/check-slug-availability with workspaceSlug", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerGet("/workspaces/slug/my-slug/available", { available: true });
+    mock.registerGet("/workspaces/check-slug-availability", { isAvailable: true, isReserved: false });
 
     const kan = createKan({ apiKey: "kan_test" });
     const result = await kan.workspaces.checkSlugAvailable("my-slug");
 
-    expect(result).toEqual({ available: true });
+    expect(mock.calls[0].url).toContain("/workspaces/check-slug-availability");
+    expect(mock.calls[0].url).toContain("workspaceSlug=my-slug");
+    expect(result).toEqual({ isAvailable: true, isReserved: false });
     restore();
   });
 
@@ -187,53 +189,55 @@ describe("WorkspacesConcern", () => {
     restore();
   });
 
-  test("createInviteLink calls POST /workspaces/:id/invite", async () => {
+  test("createInviteLink calls POST /workspaces/:id/invites", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPost("/workspaces/ws_1/invite", { id: 1, inviteCode: "abc", inviteLink: "http://link", isActive: true });
+    mock.registerPost("/workspaces/ws_1/invites", { id: 1, inviteCode: "abc", inviteLink: "http://link", isActive: true });
 
     const kan = createKan({ apiKey: "kan_test" });
     await kan.workspaces.createInviteLink("ws_1");
 
+    expect(mock.calls[0].url).toContain("/workspaces/ws_1/invites");
     expect(mock.calls[0].method).toBe("POST");
     restore();
   });
 
-  test("deactivateInviteLink calls DELETE /workspaces/:id/invite", async () => {
+  test("deactivateInviteLink calls DELETE /workspaces/:id/invites", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerDelete("/workspaces/ws_1/invite", undefined, 204);
+    mock.registerDelete("/workspaces/ws_1/invites", undefined, 204);
 
     const kan = createKan({ apiKey: "kan_test" });
     await kan.workspaces.deactivateInviteLink("ws_1");
 
-    expect(mock.calls[0].url).toContain("/workspaces/ws_1/invite");
+    expect(mock.calls[0].url).toContain("/workspaces/ws_1/invites");
     expect(mock.calls[0].method).toBe("DELETE");
     restore();
   });
 
-  test("getInviteInfo calls GET /workspaces/:code/invite", async () => {
+  test("getInviteInfo calls GET /invites/:code", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerGet("/workspaces/code_123/invite", { id: 1, inviteCode: "code_123", inviteLink: "", isActive: true });
+    mock.registerGet("/invites/code_123", { id: 1, inviteCode: "code_123", inviteLink: "", isActive: true });
 
     const kan = createKan({ apiKey: "kan_test" });
     await kan.workspaces.getInviteInfo("code_123");
 
-    expect(mock.calls[0].url).toContain("/workspaces/code_123/invite");
+    expect(mock.calls[0].url).toContain("/invites/code_123");
     restore();
   });
 
-  test("acceptInvite calls POST /workspaces/:code/invite/accept", async () => {
+  test("acceptInvite calls POST /invites/accept with inviteCode body", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPost("/workspaces/code_123/invite/accept", { publicId: "ws_1", name: "Joined", slug: "joined", createdAt: "", updatedAt: "" });
+    mock.registerPost("/invites/accept", { publicId: "ws_1", name: "Joined", slug: "joined", createdAt: "", updatedAt: "" });
 
     const kan = createKan({ apiKey: "kan_test" });
     await kan.workspaces.acceptInvite("code_123");
 
-    expect(mock.calls[0].url).toContain("/workspaces/code_123/invite/accept");
+    expect(mock.calls[0].url).toContain("/invites/accept");
     expect(mock.calls[0].method).toBe("POST");
+    expect(mock.calls[0].body).toEqual({ inviteCode: "code_123" });
     restore();
   });
 });

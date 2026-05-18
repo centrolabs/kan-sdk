@@ -24,27 +24,39 @@ describe("BoardsConcern", () => {
     restore();
   });
 
-  test("getBySlug calls /boards/slug/:slug", async () => {
+  test("getBySlug calls /workspaces/:workspaceSlug/boards/:boardSlug", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerGet("/boards/slug/my-board", { publicId: "brd_1", name: "Board", slug: "my-board", workspacePublicId: "ws_1", type: "regular", createdAt: "", updatedAt: "" });
+    mock.registerGet("/workspaces/my-ws/boards/my-board", { publicId: "brd_1", name: "Board", slug: "my-board", workspacePublicId: "ws_1", type: "regular", createdAt: "", updatedAt: "" });
 
     const kan = createKan({ apiKey: "kan_test" });
-    await kan.boards.getBySlug("my-board");
+    await kan.boards.getBySlug({ workspaceSlug: "my-ws", boardSlug: "my-board" });
 
-    expect(mock.calls[0].url).toContain("/boards/slug/my-board");
+    expect(mock.calls[0].url).toContain("/workspaces/my-ws/boards/my-board");
     restore();
   });
 
-  test("create posts correct body", async () => {
+  test("create posts to /workspaces/:id/boards with mandatory lists/labels", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPost("/boards", { publicId: "brd_new", name: "New Board", slug: "new-board", workspacePublicId: "ws_1", type: "regular", createdAt: "", updatedAt: "" });
+    mock.registerPost("/workspaces/ws_1/boards", { publicId: "brd_new", name: "New Board", slug: "new-board", workspacePublicId: "ws_1", type: "regular", createdAt: "", updatedAt: "" });
 
     const kan = createKan({ apiKey: "kan_test" });
-    await kan.boards.create({ name: "New Board", workspacePublicId: "ws_1", type: "template", description: "A board" });
+    await kan.boards.create({
+      name: "New Board",
+      workspacePublicId: "ws_1",
+      lists: ["To Do", "Done"],
+      labels: ["urgent"],
+      type: "template",
+    });
 
-    expect(mock.calls[0].body).toEqual({ name: "New Board", workspacePublicId: "ws_1", type: "template", description: "A board" });
+    expect(mock.calls[0].url).toContain("/workspaces/ws_1/boards");
+    expect(mock.calls[0].body).toEqual({
+      name: "New Board",
+      lists: ["To Do", "Done"],
+      labels: ["urgent"],
+      type: "template",
+    });
     restore();
   });
 
@@ -54,9 +66,9 @@ describe("BoardsConcern", () => {
     mock.registerPut("/boards/brd_1", { publicId: "brd_1", name: "Renamed", slug: "board", workspacePublicId: "ws_1", type: "regular", createdAt: "", updatedAt: "" });
 
     const kan = createKan({ apiKey: "kan_test" });
-    await kan.boards.update("brd_1", { name: "Renamed", description: "New desc" });
+    await kan.boards.update("brd_1", { name: "Renamed", visibility: "private", favorite: true });
 
-    expect(mock.calls[0].body).toEqual({ name: "Renamed", description: "New desc" });
+    expect(mock.calls[0].body).toEqual({ name: "Renamed", visibility: "private", favorite: true });
     expect(mock.calls[0].method).toBe("PUT");
     restore();
   });
@@ -74,15 +86,17 @@ describe("BoardsConcern", () => {
     restore();
   });
 
-  test("checkSlugAvailable calls /boards/:slug/available", async () => {
+  test("checkSlugAvailable calls /boards/:id/check-slug-availability with boardSlug", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerGet("/boards/my-slug/available", { available: false });
+    mock.registerGet("/boards/brd_1/check-slug-availability", { isReserved: false });
 
     const kan = createKan({ apiKey: "kan_test" });
-    const result = await kan.boards.checkSlugAvailable("my-slug");
+    const result = await kan.boards.checkSlugAvailable("brd_1", "my-slug");
 
-    expect(result).toEqual({ available: false });
+    expect(mock.calls[0].url).toContain("/boards/brd_1/check-slug-availability");
+    expect(mock.calls[0].url).toContain("boardSlug=my-slug");
+    expect(result).toEqual({ isReserved: false });
     restore();
   });
 });

@@ -12,11 +12,11 @@ import type { KanClient } from "../client";
 
 export interface CreateCardInput {
   title: string;
-  description?: string;
+  description: string;
   listPublicId: string;
-  labelPublicIds?: string[];
-  memberPublicIds?: string[];
-  position?: "start" | "end";
+  labelPublicIds: string[];
+  memberPublicIds: string[];
+  position: "start" | "end";
   dueDate?: string | null;
 }
 
@@ -24,9 +24,7 @@ export interface UpdateCardInput {
   title?: string;
   description?: string;
   listPublicId?: string;
-  labelPublicIds?: string[];
-  memberPublicIds?: string[];
-  position?: number;
+  index?: number;
   dueDate?: string | null;
 }
 
@@ -46,9 +44,18 @@ export interface CreateChecklistInput {
   name: string;
 }
 
+export interface UpdateChecklistInput {
+  name: string;
+}
+
+export interface CreateChecklistItemInput {
+  title: string;
+}
+
 export interface UpdateChecklistItemInput {
-  text?: string;
-  isChecked?: boolean;
+  title?: string;
+  completed?: boolean;
+  index?: number;
 }
 
 export interface GenerateUploadUrlInput {
@@ -58,8 +65,9 @@ export interface GenerateUploadUrlInput {
 }
 
 export interface ConfirmAttachmentInput {
-  key: string;
+  s3Key: string;
   filename: string;
+  originalFilename: string;
   contentType: string;
   size: number;
 }
@@ -67,43 +75,22 @@ export interface ConfirmAttachmentInput {
 export class CardsConcern {
   constructor(private client: KanClient) {}
 
-  /**
-   * Creates a new card.
-   * @param input - The card creation input
-   */
   async create(input: CreateCardInput): Promise<Card> {
     return this.client.post<Card>("/cards", input);
   }
 
-  /**
-   * Retrieves a card by its public ID.
-   * @param cardPublicId - The public ID of the card
-   */
   async get(cardPublicId: string): Promise<Card> {
     return this.client.get<Card>(`/cards/${cardPublicId}`);
   }
 
-  /**
-   * Updates an existing card.
-   * @param cardPublicId - The public ID of the card to update
-   * @param input - The fields to update
-   */
   async update(cardPublicId: string, input: UpdateCardInput): Promise<Card> {
     return this.client.put<Card>(`/cards/${cardPublicId}`, input);
   }
 
-  /**
-   * Deletes a card.
-   * @param cardPublicId - The public ID of the card to delete
-   */
   async delete(cardPublicId: string): Promise<void> {
     await this.client.delete<void>(`/cards/${cardPublicId}`);
   }
 
-  /**
-   * Retrieves paginated activities for a card.
-   * @param input - The card public ID and optional pagination params
-   */
   async getActivities(
     input: GetCardActivitiesInput
   ): Promise<CursorPaginatedResponse<CardActivity>> {
@@ -118,11 +105,6 @@ export class CardsConcern {
 
   // ── Comments ───────────────────────────────────────────────────────────────
 
-  /**
-   * Adds a comment to a card.
-   * @param cardPublicId - The public ID of the card
-   * @param input - The comment content
-   */
   async addComment(
     cardPublicId: string,
     input: CreateCommentInput
@@ -133,11 +115,6 @@ export class CardsConcern {
     );
   }
 
-  /**
-   * Updates an existing comment.
-   * @param commentPublicId - The public ID of the comment to update
-   * @param input - The new content
-   */
   async updateComment(
     commentPublicId: string,
     input: UpdateCommentInput
@@ -145,21 +122,12 @@ export class CardsConcern {
     return this.client.put<Comment>(`/comments/${commentPublicId}`, input);
   }
 
-  /**
-   * Deletes a comment.
-   * @param commentPublicId - The public ID of the comment to delete
-   */
   async deleteComment(commentPublicId: string): Promise<void> {
     await this.client.delete<void>(`/comments/${commentPublicId}`);
   }
 
   // ── Checklists ─────────────────────────────────────────────────────────────
 
-  /**
-   * Adds a checklist to a card.
-   * @param cardPublicId - The public ID of the card
-   * @param input - The checklist name
-   */
   async addChecklist(
     cardPublicId: string,
     input: CreateChecklistInput
@@ -170,59 +138,54 @@ export class CardsConcern {
     );
   }
 
-  /**
-   * Updates a checklist item.
-   * @param cardPublicId - The public ID of the card
-   * @param checklistPublicId - The public ID of the checklist
-   * @param itemPublicId - The public ID of the item to update
-   * @param input - The fields to update (text and/or checked state)
-   */
-  async updateChecklistItem(
-    cardPublicId: string,
+  async updateChecklist(
     checklistPublicId: string,
-    itemPublicId: string,
-    input: UpdateChecklistItemInput
-  ): Promise<ChecklistItem> {
-    return this.client.patch<ChecklistItem>(
-      `/cards/${cardPublicId}/checklists/${checklistPublicId}/items/${itemPublicId}`,
+    input: UpdateChecklistInput
+  ): Promise<Checklist> {
+    return this.client.put<Checklist>(
+      `/checklists/${checklistPublicId}`,
       input
     );
   }
 
-  /**
-   * Deletes a checklist item.
-   * @param cardPublicId - The public ID of the card
-   * @param checklistPublicId - The public ID of the checklist
-   * @param itemPublicId - The public ID of the item to delete
-   */
-  async deleteChecklistItem(
-    cardPublicId: string,
+  async deleteChecklist(checklistPublicId: string): Promise<void> {
+    await this.client.delete<void>(`/checklists/${checklistPublicId}`);
+  }
+
+  async addChecklistItem(
     checklistPublicId: string,
-    itemPublicId: string
-  ): Promise<void> {
+    input: CreateChecklistItemInput
+  ): Promise<ChecklistItem> {
+    return this.client.post<ChecklistItem>(
+      `/checklists/${checklistPublicId}/items`,
+      input
+    );
+  }
+
+  async updateChecklistItem(
+    checklistItemPublicId: string,
+    input: UpdateChecklistItemInput
+  ): Promise<ChecklistItem> {
+    return this.client.patch<ChecklistItem>(
+      `/checklists/items/${checklistItemPublicId}`,
+      input
+    );
+  }
+
+  async deleteChecklistItem(checklistItemPublicId: string): Promise<void> {
     await this.client.delete<void>(
-      `/cards/${cardPublicId}/checklists/${checklistPublicId}/items/${itemPublicId}`
+      `/checklists/items/${checklistItemPublicId}`
     );
   }
 
   // ── Members ─────────────────────────────────────────────────────────────────
 
-  /**
-   * Adds a member to a card.
-   * @param cardPublicId - The public ID of the card
-   * @param memberPublicId - The public ID of the member to add
-   */
   async addMember(cardPublicId: string, memberPublicId: string): Promise<void> {
     await this.client.post<void>(`/cards/${cardPublicId}/members`, {
       memberPublicId,
     });
   }
 
-  /**
-   * Removes a member from a card.
-   * @param cardPublicId - The public ID of the card
-   * @param memberPublicId - The public ID of the member to remove
-   */
   async removeMember(
     cardPublicId: string,
     memberPublicId: string
@@ -234,22 +197,12 @@ export class CardsConcern {
 
   // ── Labels ──────────────────────────────────────────────────────────────────
 
-  /**
-   * Adds a label to a card.
-   * @param cardPublicId - The public ID of the card
-   * @param labelPublicId - The public ID of the label to add
-   */
   async addLabel(cardPublicId: string, labelPublicId: string): Promise<void> {
     await this.client.post<void>(`/cards/${cardPublicId}/labels`, {
       labelPublicId,
     });
   }
 
-  /**
-   * Removes a label from a card.
-   * @param cardPublicId - The public ID of the card
-   * @param labelPublicId - The public ID of the label to remove
-   */
   async removeLabel(cardPublicId: string, labelPublicId: string): Promise<void> {
     await this.client.delete<void>(
       `/cards/${cardPublicId}/labels/${labelPublicId}`
@@ -258,11 +211,6 @@ export class CardsConcern {
 
   // ── Attachments ─────────────────────────────────────────────────────────────
 
-  /**
-   * Generates a presigned URL for uploading an attachment to S3.
-   * @param cardPublicId - The public ID of the card
-   * @param input - The file metadata (filename, contentType, size)
-   */
   async generateUploadUrl(
     cardPublicId: string,
     input: GenerateUploadUrlInput
@@ -273,11 +221,6 @@ export class CardsConcern {
     );
   }
 
-  /**
-   * Confirms an attachment upload and saves it to the database.
-   * @param cardPublicId - The public ID of the card
-   * @param input - The confirmed file metadata
-   */
   async confirmAttachment(
     cardPublicId: string,
     input: ConfirmAttachmentInput
@@ -288,17 +231,7 @@ export class CardsConcern {
     );
   }
 
-  /**
-   * Deletes an attachment from a card.
-   * @param cardPublicId - The public ID of the card
-   * @param attachmentPublicId - The public ID of the attachment to delete
-   */
-  async deleteAttachment(
-    cardPublicId: string,
-    attachmentPublicId: string
-  ): Promise<void> {
-    await this.client.delete<void>(
-      `/cards/${cardPublicId}/attachments/${attachmentPublicId}`
-    );
+  async deleteAttachment(attachmentPublicId: string): Promise<void> {
+    await this.client.delete<void>(`/attachments/${attachmentPublicId}`);
   }
 }

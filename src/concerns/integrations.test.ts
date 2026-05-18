@@ -25,28 +25,15 @@ describe("IntegrationsConcern", () => {
     restore();
   });
 
-  test("disconnectTrello posts to /integrations/trello/disconnect", async () => {
+  test("disconnect posts provider to /integration/disconnect", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPost("/integrations/trello/disconnect", {});
-
-    const kan = createKan({ apiKey: "kan_test" });
-    await kan.integrations.disconnectTrello();
-
-    expect(mock.calls[0].url).toContain("/integrations/trello/disconnect");
-    expect(mock.calls[0].method).toBe("POST");
-    restore();
-  });
-
-  test("disconnect posts provider to /integrations/disconnect", async () => {
-    const mock = createMockFetch();
-    const restore = withMock(mock);
-    mock.registerPost("/integrations/disconnect", {});
+    mock.registerPost("/integration/disconnect", {});
 
     const kan = createKan({ apiKey: "kan_test" });
     await kan.integrations.disconnect("trello");
 
-    expect(mock.calls[0].url).toContain("/integrations/disconnect");
+    expect(mock.calls[0].url).toContain("/integration/disconnect");
     expect(mock.calls[0].body).toEqual({ provider: "trello" });
     restore();
   });

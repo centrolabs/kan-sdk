@@ -60,12 +60,12 @@ describe("CardsConcern", () => {
   test("update puts with partial body", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPut("/cards/card_1", { publicId: "card_1", title: "Updated", listPublicId: "lst_1", boardPublicId: "brd_1", position: 1, createdAt: "", updatedAt: "" });
+    mock.registerPut("/cards/card_1", { publicId: "card_1", title: "Updated", listPublicId: "lst_1", boardPublicId: "brd_1", index: 1, createdAt: "", updatedAt: "" });
 
     const kan = createKan({ apiKey: "kan_test" });
-    await kan.cards.update("card_1", { title: "Updated", position: 1 });
+    await kan.cards.update("card_1", { title: "Updated", index: 1 });
 
-    expect(mock.calls[0].body).toEqual({ title: "Updated", position: 1 });
+    expect(mock.calls[0].body).toEqual({ title: "Updated", index: 1 });
     expect(mock.calls[0].method).toBe("PUT");
     restore();
   });
@@ -155,28 +155,67 @@ describe("CardsConcern", () => {
     restore();
   });
 
-  test("updateChecklistItem patches nested item path", async () => {
+  test("updateChecklist puts /checklists/:id", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPatch("/cards/card_1/checklists/chk_1/items/item_1", { publicId: "item_1", checklistPublicId: "chk_1", text: "Done", isChecked: true, position: 0, createdAt: "", updatedAt: "" });
+    mock.registerPut("/checklists/chk_1", { publicId: "chk_1", cardPublicId: "card_1", name: "Renamed", createdAt: "", updatedAt: "" });
 
     const kan = createKan({ apiKey: "kan_test" });
-    await kan.cards.updateChecklistItem("card_1", "chk_1", "item_1", { text: "Done", isChecked: true });
+    await kan.cards.updateChecklist("chk_1", { name: "Renamed" });
 
-    expect(mock.calls[0].url).toContain("/cards/card_1/checklists/chk_1/items/item_1");
-    expect(mock.calls[0].body).toEqual({ text: "Done", isChecked: true });
+    expect(mock.calls[0].url).toContain("/checklists/chk_1");
+    expect(mock.calls[0].body).toEqual({ name: "Renamed" });
     restore();
   });
 
-  test("deleteChecklistItem calls DELETE on nested item path", async () => {
+  test("deleteChecklist calls DELETE /checklists/:id", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerDelete("/cards/card_1/checklists/chk_1/items/item_1", undefined, 204);
+    mock.registerDelete("/checklists/chk_1", undefined, 204);
 
     const kan = createKan({ apiKey: "kan_test" });
-    await expect(kan.cards.deleteChecklistItem("card_1", "chk_1", "item_1")).resolves.toBeUndefined();
+    await expect(kan.cards.deleteChecklist("chk_1")).resolves.toBeUndefined();
 
-    expect(mock.calls[0].url).toContain("/cards/card_1/checklists/chk_1/items/item_1");
+    expect(mock.calls[0].url).toContain("/checklists/chk_1");
+    expect(mock.calls[0].method).toBe("DELETE");
+    restore();
+  });
+
+  test("addChecklistItem posts to /checklists/:id/items", async () => {
+    const mock = createMockFetch();
+    const restore = withMock(mock);
+    mock.registerPost("/checklists/chk_1/items", { publicId: "item_1", checklistPublicId: "chk_1", title: "Do", completed: false, index: 0, createdAt: "", updatedAt: "" });
+
+    const kan = createKan({ apiKey: "kan_test" });
+    await kan.cards.addChecklistItem("chk_1", { title: "Do" });
+
+    expect(mock.calls[0].url).toContain("/checklists/chk_1/items");
+    expect(mock.calls[0].body).toEqual({ title: "Do" });
+    restore();
+  });
+
+  test("updateChecklistItem patches /checklists/items/:id", async () => {
+    const mock = createMockFetch();
+    const restore = withMock(mock);
+    mock.registerPatch("/checklists/items/item_1", { publicId: "item_1", checklistPublicId: "chk_1", title: "Done", completed: true, index: 0, createdAt: "", updatedAt: "" });
+
+    const kan = createKan({ apiKey: "kan_test" });
+    await kan.cards.updateChecklistItem("item_1", { title: "Done", completed: true });
+
+    expect(mock.calls[0].url).toContain("/checklists/items/item_1");
+    expect(mock.calls[0].body).toEqual({ title: "Done", completed: true });
+    restore();
+  });
+
+  test("deleteChecklistItem calls DELETE /checklists/items/:id", async () => {
+    const mock = createMockFetch();
+    const restore = withMock(mock);
+    mock.registerDelete("/checklists/items/item_1", undefined, 204);
+
+    const kan = createKan({ apiKey: "kan_test" });
+    await expect(kan.cards.deleteChecklistItem("item_1")).resolves.toBeUndefined();
+
+    expect(mock.calls[0].url).toContain("/checklists/items/item_1");
     expect(mock.calls[0].method).toBe("DELETE");
     restore();
   });
@@ -257,38 +296,40 @@ describe("CardsConcern", () => {
     restore();
   });
 
-  test("confirmAttachment posts key, filename, contentType, size", async () => {
+  test("confirmAttachment posts s3Key, filenames, contentType, size", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
     mock.registerPost("/cards/card_1/attachments/confirm", {});
 
     const kan = createKan({ apiKey: "kan_test" });
     await kan.cards.confirmAttachment("card_1", {
-      key: "uploads/file.pdf",
+      s3Key: "ws_1/card_1/abc-file.pdf",
       filename: "file.pdf",
+      originalFilename: "original-file.pdf",
       contentType: "application/pdf",
       size: 1024,
     });
 
     expect(mock.calls[0].url).toContain("/cards/card_1/attachments/confirm");
     expect(mock.calls[0].body).toEqual({
-      key: "uploads/file.pdf",
+      s3Key: "ws_1/card_1/abc-file.pdf",
       filename: "file.pdf",
+      originalFilename: "original-file.pdf",
       contentType: "application/pdf",
       size: 1024,
     });
     restore();
   });
 
-  test("deleteAttachment calls DELETE /cards/:id/attachments/:attId", async () => {
+  test("deleteAttachment calls DELETE /attachments/:attId", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerDelete("/cards/card_1/attachments/att_1", undefined, 204);
+    mock.registerDelete("/attachments/att_1", undefined, 204);
 
     const kan = createKan({ apiKey: "kan_test" });
-    await expect(kan.cards.deleteAttachment("card_1", "att_1")).resolves.toBeUndefined();
+    await expect(kan.cards.deleteAttachment("att_1")).resolves.toBeUndefined();
 
-    expect(mock.calls[0].url).toContain("/cards/card_1/attachments/att_1");
+    expect(mock.calls[0].url).toContain("/attachments/att_1");
     expect(mock.calls[0].method).toBe("DELETE");
     restore();
   });

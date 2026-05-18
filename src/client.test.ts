@@ -185,12 +185,12 @@ describe("KanClient", () => {
     test("JSON-stringifies PATCH body", async () => {
       const mock = createMockFetch();
       const restore = withMock(mock);
-      mock.registerPatch("/workspaces/ws_1", { publicId: "ws_1", name: "Updated", slug: "ws", createdAt: "", updatedAt: "" });
+      mock.registerPatch("/checklists/items/item_1", { publicId: "item_1", checklistPublicId: "chk_1", title: "Done", completed: true, index: 0, createdAt: "", updatedAt: "" });
 
       const kan = createKan({ apiKey: "kan_test" });
-      await kan.workspaces.update("ws_1", { name: "Updated", description: "New desc" });
+      await kan.cards.updateChecklistItem("item_1", { title: "Done", completed: true });
 
-      expect(mock.calls[0].body).toEqual({ name: "Updated", description: "New desc" });
+      expect(mock.calls[0].body).toEqual({ title: "Done", completed: true });
       restore();
     });
 

@@ -25,14 +25,16 @@ describe("UsersConcern", () => {
     restore();
   });
 
-  test("update puts /users/me with partial body", async () => {
+  test("update puts /users with partial body", async () => {
     const mock = createMockFetch();
     const restore = withMock(mock);
-    mock.registerPut("/users/me", { publicId: "usr_1", email: "alice@example.com", name: "Alice Updated", image: "https://avatar.url" });
+    mock.registerPut("/users", { publicId: "usr_1", email: "alice@example.com", name: "Alice Updated", image: "https://avatar.url" });
 
     const kan = createKan({ apiKey: "kan_test" });
     await kan.users.update({ name: "Alice Updated", image: "https://avatar.url" });
 
+    expect(mock.calls[0].url).toContain("/users");
+    expect(mock.calls[0].url).not.toContain("/users/me");
     expect(mock.calls[0].body).toEqual({ name: "Alice Updated", image: "https://avatar.url" });
     expect(mock.calls[0].method).toBe("PUT");
     restore();

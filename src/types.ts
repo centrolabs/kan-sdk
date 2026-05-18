@@ -73,7 +73,7 @@ export interface KanList {
   publicId: string;
   name: string;
   boardPublicId: string;
-  position: number;
+  index: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -83,11 +83,11 @@ export interface KanList {
 export interface Card {
   publicId: string;
   title: string;
-  description?: string;
+  description: string | null;
   listPublicId: string;
   boardPublicId: string;
-  position: number;
-  dueDate?: string;
+  index: number;
+  dueDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -114,9 +114,9 @@ export interface Checklist {
 export interface ChecklistItem {
   publicId: string;
   checklistPublicId: string;
-  text: string;
-  isChecked: boolean;
-  position: number;
+  title: string;
+  completed: boolean;
+  index: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -151,10 +151,11 @@ export interface AttachmentUploadUrl {
 export interface Attachment {
   publicId: string;
   cardPublicId: string;
-  filename: string;
+  s3Key: string;
+  originalFilename: string | null;
   contentType: string;
-  size: number;
-  url: string;
+  size: number | null;
+  url: string | null;
   createdAt: string;
 }
 

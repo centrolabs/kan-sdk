@@ -22,19 +22,19 @@ Complete list of all endpoints exposed by the API with their implementation stat
 |--------|----------|-------------|----------------|
 | POST | `/cards/{cardPublicId}/attachments/upload-url` | Generate presigned URL for attachment upload | [`cards.generateUploadUrl()`](#cards.generateuploadurl) |
 | POST | `/cards/{cardPublicId}/attachments/confirm` | Confirm attachment upload and save to database | [`cards.confirmAttachment()`](#cards.confirmattachment) |
-| DEL | `/cards/{cardPublicId}/attachments/{attachmentPublicId}` | Delete an attachment | [`cards.deleteAttachment()`](#cards.deleteattachment) |
+| DEL | `/attachments/{attachmentPublicId}` | Delete an attachment | [`cards.deleteAttachment()`](#cards.deleteattachment) |
 
 ### Boards
 
 | Method | Endpoint | Description | Implementation |
 |--------|----------|-------------|----------------|
 | GET | `/boards` | Get all boards | — |
-| POST | `/boards` | Create board | [`boards.create()`](#boards.create) |
+| POST | `/workspaces/{workspacePublicId}/boards` | Create board | [`boards.create()`](#boards.create) |
 | GET | `/boards/{boardPublicId}` | Get board by public ID | [`boards.getByPublicId()`](#boards.getbypublicid) |
 | PUT | `/boards/{boardPublicId}` | Update board | [`boards.update()`](#boards.update) |
 | DEL | `/boards/{boardPublicId}` | Delete board | [`boards.delete()`](#boards.delete) |
-| GET | `/boards/slug/{slug}` | Get board by slug | [`boards.getBySlug()`](#boards.getbyslug) |
-| GET | `/boards/{slug}/available` | Check if a board slug is available | [`boards.checkSlugAvailable()`](#boards.checkslugavailable) |
+| GET | `/workspaces/{workspaceSlug}/boards/{boardSlug}` | Get board by slug | [`boards.getBySlug()`](#boards.getbyslug) |
+| GET | `/boards/{boardPublicId}/check-slug-availability` | Check if a board slug is available | [`boards.checkSlugAvailable()`](#boards.checkslugavailable) |
 
 ### Cards
 
@@ -42,19 +42,22 @@ Complete list of all endpoints exposed by the API with their implementation stat
 |--------|----------|-------------|----------------|
 | POST | `/cards` | Create a card | [`cards.create()`](#cards.create) |
 | POST | `/cards/{cardPublicId}/comments` | Add a comment to a card | [`cards.addComment()`](#cards.addcomment) |
-| PUT | `/cards/{cardPublicId}/comments/{commentPublicId}` | Update a comment | [`cards.updateComment()`](#cards.updatecomment) |
-| DEL | `/cards/{cardPublicId}/comments/{commentPublicId}` | Delete a comment | [`cards.deleteComment()`](#cards.deletecomment) |
-| PUT | `/cards/{cardPublicId}/labels` | Add or remove a label from a card | [`cards.addLabel()`](#cards.addlabel), [`cards.removeLabel()`](#cards.removelabel) |
-| PUT | `/cards/{cardPublicId}/members` | Add or remove a member from a card | [`cards.addMember()`](#cards.addmember), [`cards.removeMember()`](#cards.removemember) |
+| PUT | `/comments/{commentPublicId}` | Update a comment | [`cards.updateComment()`](#cards.updatecomment) |
+| DEL | `/comments/{commentPublicId}` | Delete a comment | [`cards.deleteComment()`](#cards.deletecomment) |
+| POST | `/cards/{cardPublicId}/labels` | Add a label to a card | [`cards.addLabel()`](#cards.addlabel) |
+| DEL | `/cards/{cardPublicId}/labels/{labelPublicId}` | Remove a label from a card | [`cards.removeLabel()`](#cards.removelabel) |
+| POST | `/cards/{cardPublicId}/members` | Add a member to a card | [`cards.addMember()`](#cards.addmember) |
+| DEL | `/cards/{cardPublicId}/members/{memberPublicId}` | Remove a member from a card | [`cards.removeMember()`](#cards.removemember) |
 | GET | `/cards/{cardPublicId}` | Get a card by public ID | [`cards.get()`](#cards.get) |
 | PUT | `/cards/{cardPublicId}` | Update a card | [`cards.update()`](#cards.update) |
 | DEL | `/cards/{cardPublicId}` | Delete a card | [`cards.delete()`](#cards.delete) |
 | GET | `/cards/{cardPublicId}/activities` | Get paginated card activities | [`cards.getActivities()`](#cards.getactivities) |
 | POST | `/cards/{cardPublicId}/checklists` | Add a checklist to a card | [`cards.addChecklist()`](#cards.addchecklist) |
-| DEL | `/cards/{cardPublicId}/checklists/{checklistPublicId}` | Delete a checklist | — |
-| POST | `/cards/{cardPublicId}/checklists/{checklistPublicId}/items` | Add an item to a checklist | — |
-| DEL | `/cards/{cardPublicId}/checklists/{checklistPublicId}/items/{itemPublicId}` | Delete a checklist item | [`cards.deleteChecklistItem()`](#cards.deletechecklistitem) |
-| PATCH | `/cards/{cardPublicId}/checklists/{checklistPublicId}/items/{itemPublicId}` | Update a checklist item | [`cards.updateChecklistItem()`](#cards.updatechecklistitem) |
+| PUT | `/checklists/{checklistPublicId}` | Update a checklist | [`cards.updateChecklist()`](#cards.updatechecklist) |
+| DEL | `/checklists/{checklistPublicId}` | Delete a checklist | [`cards.deleteChecklist()`](#cards.deletechecklist) |
+| POST | `/checklists/{checklistPublicId}/items` | Add an item to a checklist | [`cards.addChecklistItem()`](#cards.addchecklistitem) |
+| PATCH | `/checklists/items/{checklistItemPublicId}` | Update a checklist item | [`cards.updateChecklistItem()`](#cards.updatechecklistitem) |
+| DEL | `/checklists/items/{checklistItemPublicId}` | Delete a checklist item | [`cards.deleteChecklistItem()`](#cards.deletechecklistitem) |
 
 ### Health
 
@@ -77,7 +80,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 | Method | Endpoint | Description | Implementation |
 |--------|----------|-------------|----------------|
 | POST | `/lists` | Create a list | [`lists.create()`](#lists.create) |
-| PUT | `/lists/{listPublicId}` | Update a list | — |
+| PUT | `/lists/{listPublicId}` | Update a list | [`lists.update()`](#lists.update) |
 | DEL | `/lists/{listPublicId}` | Delete a list | [`lists.delete()`](#lists.delete) |
 
 ### Workspaces
@@ -89,27 +92,26 @@ Complete list of all endpoints exposed by the API with their implementation stat
 | GET | `/workspaces/{workspacePublicId}` | Get a workspace by public ID | [`workspaces.getByPublicId()`](#workspaces.getbypublicid) |
 | PUT | `/workspaces/{workspacePublicId}` | Update a workspace | [`workspaces.update()`](#workspaces.update) |
 | DEL | `/workspaces/{workspacePublicId}` | Delete a workspace | [`workspaces.delete()`](#workspaces.delete) |
-| GET | `/workspaces/slug/{slug}` | Get a workspace by slug | [`workspaces.getBySlug()`](#workspaces.getbyslug) |
-| GET | `/workspaces/{slug}/available` | Check if a workspace slug is available | [`workspaces.checkSlugAvailable()`](#workspaces.checkslugavailable) |
+| GET | `/workspaces/{workspaceSlug}` | Get a workspace by slug | [`workspaces.getBySlug()`](#workspaces.getbyslug) |
+| GET | `/workspaces/check-slug-availability` | Check if a workspace slug is available | [`workspaces.checkSlugAvailable()`](#workspaces.checkslugavailable) |
 | GET | `/workspaces/{workspacePublicId}/search/cards` | Search cards in a workspace | [`workspaces.searchCards()`](#workspaces.searchcards) |
-| GET | `/workspaces/{workspacePublicId}/search/boards` | Search boards in a workspace | [`workspaces.searchBoards()`](#workspaces.searchboards) |
+| GET | `/workspaces/{workspacePublicId}/search` | Search boards in a workspace | [`workspaces.searchBoards()`](#workspaces.searchboards) |
 | POST | `/workspaces/{workspacePublicId}/members/invite` | Invite a member to a workspace | [`workspaces.inviteMember()`](#workspaces.invitemember) |
 | DEL | `/workspaces/{workspacePublicId}/members/{memberPublicId}` | Delete a member from a workspace | [`workspaces.removeMember()`](#workspaces.removemember) |
 | GET | `/workspaces/{workspacePublicId}/members` | Get all workspace members | [`workspaces.listMembers()`](#workspaces.listmembers) |
 | GET | `/workspaces/{workspacePublicId}/boards` | Get all boards in a workspace | [`workspaces.listBoards()`](#workspaces.listboards) |
 | GET | `/workspaces/{workspacePublicId}/invite` | Get active invite link for workspace | [`workspaces.getActiveInviteLink()`](#workspaces.getactiveinvitelink) |
-| POST | `/workspaces/{workspacePublicId}/invite` | Create invite link for workspace | [`workspaces.createInviteLink()`](#workspaces.createinvitelink) |
-| DEL | `/workspaces/{workspacePublicId}/invite` | Deactivate invite link for workspace | [`workspaces.deactivateInviteLink()`](#workspaces.deactivateinvitelink) |
-| GET | `/workspaces/{code}/invite` | Get invite information by code | [`workspaces.getInviteInfo()`](#workspaces.getinviteinfo) |
-| POST | `/workspaces/{code}/invite/accept` | Accept an invite link | [`workspaces.acceptInvite()`](#workspaces.acceptinvite) |
+| POST | `/workspaces/{workspacePublicId}/invites` | Create invite link for workspace | [`workspaces.createInviteLink()`](#workspaces.createinvitelink) |
+| DEL | `/workspaces/{workspacePublicId}/invites` | Deactivate invite link for workspace | [`workspaces.deactivateInviteLink()`](#workspaces.deactivateinvitelink) |
+| GET | `/invites/{inviteCode}` | Get invite information by code | [`workspaces.getInviteInfo()`](#workspaces.getinviteinfo) |
+| POST | `/invites/accept` | Accept an invite link | [`workspaces.acceptInvite()`](#workspaces.acceptinvite) |
 
 ### Integrations
 
 | Method | Endpoint | Description | Implementation |
 |--------|----------|-------------|----------------|
-| POST | `/integrations/disconnect` | Disconnect integration | [`integrations.disconnect()`](#integrations.disconnect) |
+| POST | `/integration/disconnect` | Disconnect integration | [`integrations.disconnect()`](#integrations.disconnect) |
 | GET | `/integrations/trello/boards` | Get boards from Trello | [`integrations.getTrelloBoards()`](#integrations.gettrelloboards) |
-| POST | `/integrations/trello/disconnect` | Disconnect Trello integration | [`integrations.disconnectTrello()`](#integrations.disconnecttrello) |
 
 ### Imports
 
@@ -122,7 +124,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 | Method | Endpoint | Description | Implementation |
 |--------|----------|-------------|----------------|
 | GET | `/users/me` | Get user | [`users.me()`](#users.me) |
-| PUT | `/users/me` | Update user | [`users.update()`](#users.update) |
+| PUT | `/users` | Update user | [`users.update()`](#users.update) |
 
 ---
 
@@ -137,7 +139,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 
 <a name="workspaces.create"></a>
 ### `create(input)`
-- **Parameters:** `CreateWorkspaceInput` (object with `name`, `slug`, optional `description`)
+- **Parameters:** `CreateWorkspaceInput` (object with `name`, optional `slug`, optional `description`)
 - **Return Type:** `Promise<Workspace>`
 - **Endpoint:** `POST /workspaces`
 - **Description:** Creates a new workspace.
@@ -150,15 +152,15 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Description:** Retrieves a workspace by its public ID.
 
 <a name="workspaces.getbyslug"></a>
-### `getBySlug(slug)`
-- **Parameters:** `slug: string`
+### `getBySlug(workspaceSlug)`
+- **Parameters:** `workspaceSlug: string`
 - **Return Type:** `Promise<Workspace>`
-- **Endpoint:** `GET /workspaces/slug/{slug}`
+- **Endpoint:** `GET /workspaces/{workspaceSlug}`
 - **Description:** Retrieves a workspace by its slug.
 
 <a name="workspaces.update"></a>
 ### `update(workspacePublicId, input)`
-- **Parameters:** `workspacePublicId: string`, `UpdateWorkspaceInput` (object with optional `name`, `description`)
+- **Parameters:** `workspacePublicId: string`, `UpdateWorkspaceInput` (object with optional `name`, `slug`, `description`, `showEmailsToMembers`, `weekStartDay`)
 - **Return Type:** `Promise<Workspace>`
 - **Endpoint:** `PUT /workspaces/{workspacePublicId}`
 - **Description:** Updates an existing workspace.
@@ -213,11 +215,11 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Description:** Searches for boards within a workspace.
 
 <a name="workspaces.checkslugavailable"></a>
-### `checkSlugAvailable(slug)`
-- **Parameters:** `slug: string`
-- **Return Type:** `Promise<{ available: boolean }>`
-- **Endpoint:** `GET /workspaces/slug/{slug}/available`
-- **Description:** Checks whether a workspace slug is available.
+### `checkSlugAvailable(workspaceSlug)`
+- **Parameters:** `workspaceSlug: string`
+- **Return Type:** `Promise<{ isAvailable: boolean; isReserved: boolean }>`
+- **Endpoint:** `GET /workspaces/check-slug-availability?workspaceSlug={workspaceSlug}`
+- **Description:** Checks whether a workspace slug is available and whether it is reserved.
 
 <a name="workspaces.getactiveinvitelink"></a>
 ### `getActiveInviteLink(workspacePublicId)`
@@ -230,29 +232,29 @@ Complete list of all endpoints exposed by the API with their implementation stat
 ### `createInviteLink(workspacePublicId)`
 - **Parameters:** `workspacePublicId: string`
 - **Return Type:** `Promise<InviteLink>`
-- **Endpoint:** `POST /workspaces/{workspacePublicId}/invite`
+- **Endpoint:** `POST /workspaces/{workspacePublicId}/invites`
 - **Description:** Creates a new invite link for a workspace.
 
 <a name="workspaces.deactivateinvitelink"></a>
 ### `deactivateInviteLink(workspacePublicId)`
 - **Parameters:** `workspacePublicId: string`
 - **Return Type:** `Promise<void>`
-- **Endpoint:** `DELETE /workspaces/{workspacePublicId}/invite`
+- **Endpoint:** `DELETE /workspaces/{workspacePublicId}/invites`
 - **Description:** Deactivates the current invite link for a workspace.
 
 <a name="workspaces.getinviteinfo"></a>
-### `getInviteInfo(code)`
-- **Parameters:** `code: string`
+### `getInviteInfo(inviteCode)`
+- **Parameters:** `inviteCode: string`
 - **Return Type:** `Promise<InviteLink>`
-- **Endpoint:** `GET /workspaces/{code}/invite`
+- **Endpoint:** `GET /invites/{inviteCode}`
 - **Description:** Retrieves invite information by its code.
 
 <a name="workspaces.acceptinvite"></a>
-### `acceptInvite(code)`
-- **Parameters:** `code: string`
+### `acceptInvite(inviteCode)`
+- **Parameters:** `inviteCode: string`
 - **Return Type:** `Promise<Workspace>`
-- **Endpoint:** `POST /workspaces/{code}/invite/accept`
-- **Description:** Accepts a workspace invite and joins the workspace.
+- **Endpoint:** `POST /invites/accept`
+- **Description:** Accepts a workspace invite (request body: `{ inviteCode }`) and joins the workspace.
 
 ---
 
@@ -266,22 +268,22 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Description:** Retrieves a board by its public ID.
 
 <a name="boards.getbyslug"></a>
-### `getBySlug(slug)`
-- **Parameters:** `slug: string`
+### `getBySlug(input)`
+- **Parameters:** `GetBoardBySlugInput` (object with `workspaceSlug`, `boardSlug`)
 - **Return Type:** `Promise<Board>`
-- **Endpoint:** `GET /boards/slug/{slug}`
-- **Description:** Retrieves a board by its slug.
+- **Endpoint:** `GET /workspaces/{workspaceSlug}/boards/{boardSlug}`
+- **Description:** Retrieves a board by its workspace slug and board slug.
 
 <a name="boards.create"></a>
 ### `create(input)`
-- **Parameters:** `CreateBoardInput` (object with `name`, `workspacePublicId`, optional `description`, optional `type`)
+- **Parameters:** `CreateBoardInput` (object with `name`, `workspacePublicId`, `lists: string[]`, `labels: string[]`, optional `type: "regular" | "template"`, optional `sourceBoardPublicId`)
 - **Return Type:** `Promise<Board>`
-- **Endpoint:** `POST /boards`
-- **Description:** Creates a new board.
+- **Endpoint:** `POST /workspaces/{workspacePublicId}/boards`
+- **Description:** Creates a new board in the given workspace with its initial lists and labels.
 
 <a name="boards.update"></a>
 ### `update(boardPublicId, input)`
-- **Parameters:** `boardPublicId: string`, `UpdateBoardInput` (object with optional `name`, `description`)
+- **Parameters:** `boardPublicId: string`, `UpdateBoardInput` (object with optional `name`, `slug`, `visibility`, `favorite`, `isArchived`)
 - **Return Type:** `Promise<Board>`
 - **Endpoint:** `PUT /boards/{boardPublicId}`
 - **Description:** Updates an existing board.
@@ -294,11 +296,11 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Description:** Deletes a board.
 
 <a name="boards.checkslugavailable"></a>
-### `checkSlugAvailable(slug)`
-- **Parameters:** `slug: string`
-- **Return Type:** `Promise<{ available: boolean }>`
-- **Endpoint:** `GET /boards/{slug}/available`
-- **Description:** Checks whether a board slug is available.
+### `checkSlugAvailable(boardPublicId, boardSlug)`
+- **Parameters:** `boardPublicId: string`, `boardSlug: string`
+- **Return Type:** `Promise<{ isReserved: boolean }>`
+- **Endpoint:** `GET /boards/{boardPublicId}/check-slug-availability?boardSlug={boardSlug}`
+- **Description:** Checks whether a board slug is reserved for the given board.
 
 ---
 
@@ -310,6 +312,13 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Return Type:** `Promise<KanList>`
 - **Endpoint:** `POST /lists`
 - **Description:** Creates a new list on a board.
+
+<a name="lists.update"></a>
+### `update(listPublicId, input)`
+- **Parameters:** `listPublicId: string`, `UpdateListInput` (object with optional `name`, `index`)
+- **Return Type:** `Promise<KanList>`
+- **Endpoint:** `PUT /lists/{listPublicId}`
+- **Description:** Updates an existing list (rename and/or reorder).
 
 <a name="lists.delete"></a>
 ### `delete(listPublicId)`
@@ -324,10 +333,10 @@ Complete list of all endpoints exposed by the API with their implementation stat
 
 <a name="cards.create"></a>
 ### `create(input)`
-- **Parameters:** `CreateCardInput` (object with `title`, `listPublicId`, optional `description`, `labelPublicIds`, `memberPublicIds`, `position`, `dueDate`)
+- **Parameters:** `CreateCardInput` (object with required `title`, `description`, `listPublicId`, `labelPublicIds: string[]`, `memberPublicIds: string[]`, `position: "start" | "end"`, and optional `dueDate`)
 - **Return Type:** `Promise<Card>`
 - **Endpoint:** `POST /cards`
-- **Description:** Creates a new card.
+- **Description:** Creates a new card. All fields except `dueDate` are required by the API.
 
 <a name="cards.get"></a>
 ### `get(cardPublicId)`
@@ -338,10 +347,10 @@ Complete list of all endpoints exposed by the API with their implementation stat
 
 <a name="cards.update"></a>
 ### `update(cardPublicId, input)`
-- **Parameters:** `cardPublicId: string`, `UpdateCardInput` (object with optional `title`, `description`, `listPublicId`, `labelPublicIds`, `memberPublicIds`, `position`, `dueDate`)
+- **Parameters:** `cardPublicId: string`, `UpdateCardInput` (object with optional `title`, `description`, `listPublicId`, `index`, `dueDate`)
 - **Return Type:** `Promise<Card>`
 - **Endpoint:** `PUT /cards/{cardPublicId}`
-- **Description:** Updates an existing card.
+- **Description:** Updates an existing card. Card reordering is performed via `index`. Labels and members are managed through their dedicated endpoints.
 
 <a name="cards.delete"></a>
 ### `delete(cardPublicId)`
@@ -361,23 +370,23 @@ Complete list of all endpoints exposed by the API with their implementation stat
 
 <a name="cards.addcomment"></a>
 ### `addComment(cardPublicId, input)`
-- **Parameters:** `cardPublicId: string`, `CreateCommentInput` (object with `content`)
+- **Parameters:** `cardPublicId: string`, `CreateCommentInput` (object with `comment`)
 - **Return Type:** `Promise<Comment>`
 - **Endpoint:** `POST /cards/{cardPublicId}/comments`
 - **Description:** Adds a comment to a card.
 
 <a name="cards.updatecomment"></a>
 ### `updateComment(commentPublicId, input)`
-- **Parameters:** `commentPublicId: string`, `UpdateCommentInput` (object with `content`)
+- **Parameters:** `commentPublicId: string`, `UpdateCommentInput` (object with `comment`)
 - **Return Type:** `Promise<Comment>`
-- **Endpoint:** `PUT /cards/{cardPublicId}/comments/{commentPublicId}`
+- **Endpoint:** `PUT /comments/{commentPublicId}`
 - **Description:** Updates an existing comment.
 
 <a name="cards.deletecomment"></a>
 ### `deleteComment(commentPublicId)`
 - **Parameters:** `commentPublicId: string`
 - **Return Type:** `Promise<void>`
-- **Endpoint:** `DELETE /cards/{cardPublicId}/comments/{commentPublicId}`
+- **Endpoint:** `DELETE /comments/{commentPublicId}`
 - **Description:** Deletes a comment.
 
 #### Checklists
@@ -389,18 +398,39 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Endpoint:** `POST /cards/{cardPublicId}/checklists`
 - **Description:** Adds a checklist to a card.
 
-<a name="cards.updatechecklistitem"></a>
-### `updateChecklistItem(cardPublicId, checklistPublicId, itemPublicId, input)`
-- **Parameters:** `cardPublicId: string`, `checklistPublicId: string`, `itemPublicId: string`, `UpdateChecklistItemInput` (object with optional `text`, `isChecked`)
+<a name="cards.updatechecklist"></a>
+### `updateChecklist(checklistPublicId, input)`
+- **Parameters:** `checklistPublicId: string`, `UpdateChecklistInput` (object with `name`)
+- **Return Type:** `Promise<Checklist>`
+- **Endpoint:** `PUT /checklists/{checklistPublicId}`
+- **Description:** Updates a checklist.
+
+<a name="cards.deletechecklist"></a>
+### `deleteChecklist(checklistPublicId)`
+- **Parameters:** `checklistPublicId: string`
+- **Return Type:** `Promise<void>`
+- **Endpoint:** `DELETE /checklists/{checklistPublicId}`
+- **Description:** Deletes a checklist.
+
+<a name="cards.addchecklistitem"></a>
+### `addChecklistItem(checklistPublicId, input)`
+- **Parameters:** `checklistPublicId: string`, `CreateChecklistItemInput` (object with `title`)
 - **Return Type:** `Promise<ChecklistItem>`
-- **Endpoint:** `PATCH /cards/{cardPublicId}/checklists/{checklistPublicId}/items/{itemPublicId}`
-- **Description:** Updates a checklist item.
+- **Endpoint:** `POST /checklists/{checklistPublicId}/items`
+- **Description:** Adds an item to a checklist.
+
+<a name="cards.updatechecklistitem"></a>
+### `updateChecklistItem(checklistItemPublicId, input)`
+- **Parameters:** `checklistItemPublicId: string`, `UpdateChecklistItemInput` (object with optional `title`, `completed`, `index`)
+- **Return Type:** `Promise<ChecklistItem>`
+- **Endpoint:** `PATCH /checklists/items/{checklistItemPublicId}`
+- **Description:** Updates a checklist item (rename, toggle completion, and/or reorder).
 
 <a name="cards.deletechecklistitem"></a>
-### `deleteChecklistItem(cardPublicId, checklistPublicId, itemPublicId)`
-- **Parameters:** `cardPublicId: string`, `checklistPublicId: string`, `itemPublicId: string`
+### `deleteChecklistItem(checklistItemPublicId)`
+- **Parameters:** `checklistItemPublicId: string`
 - **Return Type:** `Promise<void>`
-- **Endpoint:** `DELETE /cards/{cardPublicId}/checklists/{checklistPublicId}/items/{itemPublicId}`
+- **Endpoint:** `DELETE /checklists/items/{checklistItemPublicId}`
 - **Description:** Deletes a checklist item.
 
 #### Members
@@ -410,7 +440,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Parameters:** `cardPublicId: string`, `memberPublicId: string`
 - **Return Type:** `Promise<void>`
 - **Endpoint:** `POST /cards/{cardPublicId}/members`
-- **Description:** Adds a member to a card.
+- **Description:** Adds a member to a card (sends `{ memberPublicId }` in the request body).
 
 <a name="cards.removemember"></a>
 ### `removeMember(cardPublicId, memberPublicId)`
@@ -426,7 +456,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Parameters:** `cardPublicId: string`, `labelPublicId: string`
 - **Return Type:** `Promise<void>`
 - **Endpoint:** `POST /cards/{cardPublicId}/labels`
-- **Description:** Adds a label to a card.
+- **Description:** Adds a label to a card (sends `{ labelPublicId }` in the request body).
 
 <a name="cards.removelabel"></a>
 ### `removeLabel(cardPublicId, labelPublicId)`
@@ -446,17 +476,17 @@ Complete list of all endpoints exposed by the API with their implementation stat
 
 <a name="cards.confirmattachment"></a>
 ### `confirmAttachment(cardPublicId, input)`
-- **Parameters:** `cardPublicId: string`, `ConfirmAttachmentInput` (object with `key`, `filename`, `contentType`, `size`)
+- **Parameters:** `cardPublicId: string`, `ConfirmAttachmentInput` (object with `s3Key`, `filename`, `originalFilename`, `contentType`, `size`)
 - **Return Type:** `Promise<void>`
 - **Endpoint:** `POST /cards/{cardPublicId}/attachments/confirm`
 - **Description:** Confirms an attachment upload and saves it to the database.
 
 <a name="cards.deleteattachment"></a>
-### `deleteAttachment(cardPublicId, attachmentPublicId)`
-- **Parameters:** `cardPublicId: string`, `attachmentPublicId: string`
+### `deleteAttachment(attachmentPublicId)`
+- **Parameters:** `attachmentPublicId: string`
 - **Return Type:** `Promise<void>`
-- **Endpoint:** `DELETE /cards/{cardPublicId}/attachments/{attachmentPublicId}`
-- **Description:** Deletes an attachment from a card.
+- **Endpoint:** `DELETE /attachments/{attachmentPublicId}`
+- **Description:** Deletes an attachment.
 
 ---
 
@@ -464,7 +494,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 
 <a name="labels.create"></a>
 ### `create(input)`
-- **Parameters:** `CreateLabelInput` (object with `name`, `boardPublicId`, optional `colourCode`)
+- **Parameters:** `CreateLabelInput` (object with `name`, `boardPublicId`, `colourCode`)
 - **Return Type:** `Promise<Label>`
 - **Endpoint:** `POST /labels`
 - **Description:** Creates a new label.
@@ -478,7 +508,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 
 <a name="labels.update"></a>
 ### `update(labelPublicId, input)`
-- **Parameters:** `labelPublicId: string`, `UpdateLabelInput` (object with optional `name`, `colourCode`)
+- **Parameters:** `labelPublicId: string`, `UpdateLabelInput` (object with `name`, `colourCode`)
 - **Return Type:** `Promise<Label>`
 - **Endpoint:** `PUT /labels/{labelPublicId}`
 - **Description:** Updates an existing label.
@@ -505,7 +535,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 ### `update(input)`
 - **Parameters:** `UpdateUserInput` (object with optional `name`, `image`)
 - **Return Type:** `Promise<User>`
-- **Endpoint:** `PUT /users/me`
+- **Endpoint:** `PUT /users`
 - **Description:** Updates the currently authenticated user.
 
 ---
@@ -530,19 +560,12 @@ Complete list of all endpoints exposed by the API with their implementation stat
 - **Endpoint:** `GET /integrations/trello/boards`
 - **Description:** Retrieves all boards from Trello.
 
-<a name="integrations.disconnecttrello"></a>
-### `disconnectTrello()`
-- **Parameters:** None
-- **Return Type:** `Promise<void>`
-- **Endpoint:** `POST /integrations/trello/disconnect`
-- **Description:** Disconnects the Trello integration.
-
 <a name="integrations.disconnect"></a>
 ### `disconnect(provider)`
-- **Parameters:** `provider: string`
+- **Parameters:** `provider: DisconnectProvider` (`"trello" | "github"`)
 - **Return Type:** `Promise<void>`
-- **Endpoint:** `POST /integrations/disconnect`
-- **Description:** Disconnects an integration by provider name.
+- **Endpoint:** `POST /integration/disconnect`
+- **Description:** Disconnects an integration by provider name (sends `{ provider }` in the request body).
 
 ---
 
@@ -550,7 +573,7 @@ Complete list of all endpoints exposed by the API with their implementation stat
 
 <a name="imports.importtrelloboards"></a>
 ### `importTrelloBoards(input)`
-- **Parameters:** `ImportTrelloBoardsInput` (object with `boardIds`, `workspacePublicId`)
+- **Parameters:** `ImportTrelloBoardsInput` (object with `boardIds: string[]`, `workspacePublicId`)
 - **Return Type:** `Promise<ImportResult>`
 - **Endpoint:** `POST /imports/trello/boards`
 - **Description:** Imports boards from Trello into a workspace.
@@ -579,20 +602,18 @@ All error types are exported from `kan-sdk` and can be caught for specific handl
 |----------|-----------|-------------|-------------|---------|
 | Workspaces | 18 | 18 | 18 | 0 |
 | Boards | 7 | 6 | 6 | 1 (`/boards` GET) |
-| Lists | 3 | 2 | 2 | 1 (`/lists/{id}` PUT) |
-| Cards | 18 | 17 | 17 | 1 (`/cards/{id}/checklists/{id}` DEL) |
+| Lists | 3 | 3 | 3 | 0 |
+| Cards | 18 | 18 | 18 | 0 |
 | Labels | 4 | 4 | 4 | 0 |
 | Users | 2 | 2 | 2 | 0 |
-| Health | 2 | 1 | 1 | 1 (`stats`) |
-| Integrations | 3 | 3 | 3 | 0 |
+| Health | 2 | 1 | 1 | 1 (`/health/stats`) |
+| Integrations | 2 | 2 | 2 | 0 |
 | Imports | 1 | 1 | 1 | 0 |
 | Attachments | 3 | 3 | 3 | 0 |
-| **Total** | **61** | **57** | **57** | **4** |
+| **Total** | **60** | **58** | **58** | **2** |
 
-**SDK Implementation:** 57 of 61 API routes have SDK methods.
+**SDK Implementation:** 58 of 60 API routes have SDK methods.
 
 **Missing from SDK:**
 - `GET /boards` - List all boards
-- `PUT /lists/{listPublicId}` - Update a list
-- `DEL /cards/{cardPublicId}/checklists/{checklistPublicId}` - Delete a checklist
 - `GET /health/stats` - Get statistics
